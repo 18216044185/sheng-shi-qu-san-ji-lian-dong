@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<h2>省市区三级联动</h2>
+	<label for="">请选择省份：</label>
+	<select id="province">
+		<option value="">--省份--</option>
+	</select>
+	<select id="city">
+		<option value="">--市区--</option>
+	</select>
+	<select id="country">
+		<option value="">--区县--</option>
+	</select>
+
+	<script>
+		var province = document.querySelector("#province");
+		var city = document.querySelector("#city");
+		var country = document.querySelector("#country");
+
+		//获取所有的省份
+		//第一步，创建xhr对象
+		var xhr = new XMLHttpRequest();
+		//第二步，建立连接
+		xhr.open('get','/province');
+		//第三步，监听readyState的变化
+		xhr.onreadystatechange = function(){
+			if (xhr.readyState == 4 && xhr.status == 200) {
+				let res = xhr.responseText;
+				console.log(res);
+				let provinces = JSON.parse(res);
+				console.log(provinces);
+				let str = '<option value="">--省份--</option>';
+				provinces.forEach(item => {
+					str += `<option value="${item}">${item}</option>`;
+				});
+				province.innerHTML = str;
+			}
+		}
+		//第四步，发送请求
+		xhr.send(null);
+
+		//注册province的change事件
+		province.onchange = function(){
+			country.innerHTML = '<option value="">--区县---</option>';
+			xhr.open('get','/city?province=' +this.value);
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState == 4 && xhr.status == 200){
+					//获取到的市
+					let res = xhr.responseText;
+					console.log(res);
+					let cities = JSON.parse(res);
+					console.log(cities);
+					let str = '<option value="">--市区--</option>';
+					cities.forEach(item => {
+						str += `<option value="${item}">${item}</option>`;
+					});
+					city.innerHTML = str;
+				}
+			}
+			xhr.send(null);
+		}
+
+		city.onchange = function(){
+			xhr.open('get','/country?city=' + this.value);
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState == 4 && xhr.status == 200){
+					//获取到的县区
+					let res = xhr.responseText;
+					console.log(res);
+					let countries = JSON.parse(res);
+					console.log(countries);
+					let str = '<option value="">--区县--</option>';
+					countries.forEach(item => {
+						str += `<option value="${item}">${item}</option>`
+					});
+					country.innerHTML = str;
+				}
+			}
+			xhr.send(null);
+		}
+
+	</script>
+</body>
+</html> 
+
+
